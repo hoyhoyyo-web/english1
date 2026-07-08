@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summer Reading</title>
+<style>
+  :root {
+    --sky: #1E90FF; --sky-light: #E8F4FF; --sun: #FFB800; --sun-light: #FFF8E1;
+    --green: #2ECC71; --green-light: #E8F8F0; --coral: #FF6B6B; --coral-light: #FFF0F0;
+    --gray-0: #fff; --gray-1: #F8F9FA; --gray-2: #EEF0F4; --gray-5: #5A6272; --gray-6: #2C3140;
+    --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Segoe UI', sans-serif; background: linear-gradient(160deg, #E8F4FF 0%, #FFF8E1 100%); min-height: 100vh; padding: 16px; }
+
+  .header { text-align: center; margin-bottom: 20px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: var(--sky); margin-bottom: 4px; }
+  .header p { font-size: 13px; color: var(--gray-5); }
+  .emoji-title { font-size: 36px; display: block; margin-bottom: 8px; }
+
+  .card { background: var(--gray-0); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; max-width: 680px; margin-left: auto; margin-right: auto; }
+
+  /* 지문 */
+  .passage-title { font-size: 14px; font-weight: 700; color: var(--sky); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .passage-body { font-size: 15px; line-height: 1.9; color: var(--gray-6); background: var(--sky-light); border-radius: 10px; padding: 16px; border-left: 4px solid var(--sky); }
+  .highlight { background: var(--sun-light); border-radius: 4px; padding: 0 3px; font-weight: 500; }
+
+  /* 퀴즈 */
+  .quiz-section { max-width: 680px; margin: 0 auto; }
+  .q-card { background: var(--gray-0); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 14px; }
+  .q-num { font-size: 11px; font-weight: 700; color: var(--sky); margin-bottom: 6px; letter-spacing: 0.05em; }
+  .q-text { font-size: 15px; font-weight: 600; color: var(--gray-6); margin-bottom: 14px; line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt { padding: 10px 14px; border: 1.5px solid var(--gray-2); border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.15s; color: var(--gray-6); background: var(--gray-0); }
+  .opt:hover { border-color: var(--sky); background: var(--sky-light); }
+  .opt.correct { background: var(--green-light); border-color: var(--green); color: #1A7A4A; font-weight: 600; }
+  .opt.wrong { background: var(--coral-light); border-color: var(--coral); color: #C0392B; }
+  .opt.disabled { pointer-events: none; opacity: 0.5; }
+  .opt.disabled.correct { opacity: 1; }
+  .feedback { margin-top: 10px; font-size: 13px; padding: 8px 12px; border-radius: 8px; line-height: 1.6; display: none; }
+  .feedback.show { display: block; }
+  .feedback.ok { background: var(--green-light); color: #1A7A4A; }
+  .feedback.no { background: var(--coral-light); color: #C0392B; }
+
+  /* 결과 */
+  .result-box { text-align: center; padding: 32px 20px; display: none; }
+  .result-box.show { display: block; }
+  .result-emoji { font-size: 56px; margin-bottom: 12px; }
+  .result-score { font-size: 36px; font-weight: 700; color: var(--sky); margin-bottom: 6px; }
+  .result-msg { font-size: 15px; color: var(--gray-5); margin-bottom: 20px; }
+  .retry-btn { padding: 12px 28px; background: var(--sky); color: white; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600; cursor: pointer; }
+  .retry-btn:hover { background: #1270E0; }
+
+  .progress-bar { height: 6px; background: var(--gray-2); border-radius: 3px; margin-bottom: 16px; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .progress-fill { height: 100%; background: var(--sky); border-radius: 3px; transition: width 0.3s; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="emoji-title">☀️📖</span>
+  <h1>Summer Reading</h1>
+  <p>Read the passage and answer the questions!</p>
+</div>
+
+<div class="card">
+  <div class="passage-title">📄 Read this passage carefully</div>
+  <div class="passage-body">
+    My name is <span class="highlight">Mia</span>. This summer, I have many plans!
+    <br><br>
+    First, I will go to <span class="highlight">Jeju Island</span> with my family. We will swim in the ocean and eat delicious food. I am very excited!
+    <br><br>
+    Second, I will join a <span class="highlight">art camp</span> for two weeks. I love drawing and painting. I want to make a beautiful picture of the sea.
+    <br><br>
+    Third, I will read <span class="highlight">10 books</span> this summer. My favorite books are adventure stories. I already have five books ready to read.
+    <br><br>
+    Finally, I will visit my <span class="highlight">grandparents</span> in the countryside. We will pick fruits and cook together. I can't wait!
+  </div>
+</div>
+
+<div class="progress-bar" id="progress-bar">
+  <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+</div>
+
+<div class="quiz-section" id="quiz-section"></div>
+
+<div class="card result-box" id="result-box">
+  <div class="result-emoji" id="result-emoji"></div>
+  <div class="result-score" id="result-score"></div>
+  <div class="result-msg" id="result-msg"></div>
+  <button class="retry-btn" onclick="resetQuiz()">🔄 Try Again</button>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "1. Where will Mia go with her family?",
+    opts: ["Seoul", "Busan", "Jeju Island", "Japan"],
+    ans: 2,
+    fb: "✅ Mia will go to Jeju Island with her family!"
+  },
+  {
+    q: "2. What will Mia do at the art camp?",
+    opts: ["Sing songs", "Draw and paint", "Play sports", "Cook food"],
+    ans: 1,
+    fb: "✅ Mia loves drawing and painting at the art camp!"
+  },
+  {
+    q: "3. How many books will Mia read this summer?",
+    opts: ["5 books", "7 books", "10 books", "15 books"],
+    ans: 2,
+    fb: "✅ Mia will read 10 books this summer!"
+  },
+  {
+    q: "4. What kind of books does Mia like?",
+    opts: ["Science books", "Adventure stories", "Comic books", "History books"],
+    ans: 1,
+    fb: "✅ Mia's favorite books are adventure stories!"
+  },
+  {
+    q: "5. What will Mia do at her grandparents' house?",
+    opts: ["Watch TV", "Play games", "Pick fruits and cook", "Go swimming"],
+    ans: 2,
+    fb: "✅ Mia will pick fruits and cook with her grandparents!"
+  },
+  {
+    q: "6. How long is the art camp?",
+    opts: ["One week", "Two weeks", "Three weeks", "One month"],
+    ans: 1,
+    fb: "✅ The art camp is for two weeks!"
+  },
+  {
+    q: "7. How many books has Mia already prepared?",
+    opts: ["3 books", "4 books", "5 books", "6 books"],
+    ans: 2,
+    fb: "✅ Mia already has five books ready!"
+  },
+];
+
+let answered = new Array(questions.length).fill(false);
+let score = 0;
+
+function renderQuiz() {
+  const section = document.getElementById('quiz-section');
+  section.innerHTML = questions.map((q, i) => `
+    <div class="q-card" id="qcard-${i}">
+      <div class="q-num">QUESTION ${i+1} of ${questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">
+        ${q.opts.map((opt, j) => `
+          <button class="opt" onclick="answer(${i}, ${j})" id="opt-${i}-${j}">
+            ${'ABCD'[j]}. ${opt}
+          </button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="fb-${i}"></div>
+    </div>
+  `).join('');
+  updateProgress();
+}
+
+function answer(qi, oi) {
+  if (answered[qi]) return;
+  answered[qi] = true;
+  const q = questions[qi];
+  const allOpts = document.querySelectorAll(`#qcard-${qi} .opt`);
+  allOpts.forEach((el, j) => {
+    el.classList.add('disabled');
+    if (j === q.ans) el.classList.add('correct');
+    else if (j === oi && oi !== q.ans) el.classList.add('wrong');
+  });
+  const fb = document.getElementById(`fb-${qi}`);
+  fb.classList.add('show');
+  if (oi === q.ans) {
+    score++;
+    fb.classList.add('ok');
+    fb.textContent = q.fb;
+  } else {
+    fb.classList.add('no');
+    fb.textContent = `❌ Not quite! The correct answer is: ${q.opts[q.ans]}`;
+  }
+  updateProgress();
+  if (answered.every(Boolean)) setTimeout(showResult, 800);
+}
+
+function updateProgress() {
+  const done = answered.filter(Boolean).length;
+  document.getElementById('progress-fill').style.width = (done / questions.length * 100) + '%';
+}
+
+function showResult() {
+  document.getElementById('quiz-section').style.display = 'none';
+  const box = document.getElementById('result-box');
+  box.classList.add('show');
+  const emoji = score === questions.length ? '🏆' : score >= 5 ? '⭐' : score >= 3 ? '👍' : '💪';
+  const msg = score === questions.length ? 'Perfect! You read very carefully!' :
+              score >= 5 ? 'Great job! You understood the passage well!' :
+              score >= 3 ? 'Good try! Read the passage again and try!' : 'Keep trying! You can do it!';
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-score').textContent = `${score} / ${questions.length}`;
+  document.getElementById('result-msg').textContent = msg;
+}
+
+function resetQuiz() {
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  document.getElementById('result-box').classList.remove('show');
+  document.getElementById('quiz-section').style.display = 'block';
+  renderQuiz();
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
